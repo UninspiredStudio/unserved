@@ -25,6 +25,7 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
       - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
       - run: echo "VERSION=$(bun run scripts/bumpVersion.ts --type major)" >> $GITHUB_ENV
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -33,20 +34,11 @@ jobs:
           file_pattern: "package.json"
           tagging_message: "v${{ env.VERSION }}"
           repository: .
-  publish:
-    needs: bump
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
       - run: bun run build
       - run: touch bunfig.toml && echo "[install]" > bunfig.toml && echo 'registry = { url = "https://registry.npmjs.org", token = "${{ secrets.NPM_TOKEN }}" }' >> bunfig.toml
       - run: bun publish --access public
   merge:
-    needs: publish
+    needs: bump
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
