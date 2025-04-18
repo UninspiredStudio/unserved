@@ -1,23 +1,34 @@
-import { join, relative } from "node:path";
+import path, { join, resolve } from "node:path";
 import { file } from "bun";
 import {
   unservedConfigSchemaPartial,
   type UnservedConfigPartial,
 } from "./config";
 
-const unservedConfigPathJson = join(process.cwd(), "unserved.json");
-const unservedConfigPathToml = join(process.cwd(), "unserved.toml");
+const CONFIG_FILE_JSON = "unserved.json" as const;
+const CONFIG_FILE_TOML = "unserved.toml" as const;
 
-export async function findConfig(): Promise<string | null> {
+export async function findConfig(configPath?: string): Promise<string | null> {
+  // configPath can be either a path to a file or a directory
+  // if it's a directory, we need to check for the config file in the directory
+
+  let path = configPath ?? process.cwd();
+  if (
+    [CONFIG_FILE_JSON, CONFIG_FILE_TOML].some((file) => path.endsWith(file))
+  ) {
+    path = path.replace(CONFIG_FILE_JSON, "").replace(CONFIG_FILE_TOML, "");
+  }
+  const jsonPath = join(path, CONFIG_FILE_JSON);
+  const tomlPath = join(path, CONFIG_FILE_TOML);
   const [existsJson, existsToml] = await Promise.all([
-    file(unservedConfigPathJson).exists(),
-    file(unservedConfigPathToml).exists(),
+    file(jsonPath).exists(),
+    file(tomlPath).exists(),
   ]);
   if (existsToml) {
-    return unservedConfigPathToml;
+    return resolve(tomlPath);
   }
   if (existsJson) {
-    return unservedConfigPathJson;
+    return resolve(jsonPath);
   }
   return null;
 }
@@ -27,11 +38,10 @@ interface ConfigResult {
   config: UnservedConfigPartial;
 }
 
-let unservedConfig: ConfigResult | null = null;
-
-export async function loadUnservedConfig(): Promise<ConfigResult> {
-  if (unservedConfig) return unservedConfig;
-  const foundConfig = await findConfig();
+export async function loadUnservedConfig(
+  configPath?: string
+): Promise<ConfigResult> {
+  const foundConfig = await findConfig(configPath);
   if (!foundConfig) {
     return {
       configFile: undefined,
@@ -40,7 +50,7 @@ export async function loadUnservedConfig(): Promise<ConfigResult> {
   }
   const configContent = await import(foundConfig);
   return {
-    configFile: relative(process.cwd(), foundConfig),
+    configFile: foundConfig,
     config: unservedConfigSchemaPartial.parse(configContent),
   };
 }

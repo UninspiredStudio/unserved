@@ -5,3 +5,12 @@ autoport = true
 [paths]
 root = "./html"
 directoryIndex = true
+
+[cache]
+enabled = true
+
+[etag]
+enabled = true
+
+[compression]
+enabled = true

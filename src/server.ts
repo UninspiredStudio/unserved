@@ -1,16 +1,12 @@
 import { serve, type BunFile } from "bun";
 import { Hono } from "hono";
 import { getConfig } from "./utils/config";
-import { logger } from "hono/logger";
-import { secureHeaders } from "hono/secure-headers";
-import { compressionMiddleware } from "./middlewares/compression";
 import { staticMiddleware } from "./middlewares/static";
 import { renderMiddleware } from "./middlewares/render";
-import { etagMiddleware } from "./middlewares/etag";
-import { cacheMiddleware } from "./middlewares/cache";
 import { getNextAvailablePort } from "./utils/ports";
 import { startLog } from "./utils/startLog";
-import { jsxRenderer } from "hono/jsx-renderer";
+import { resolve } from "node:path";
+import { noopMiddleware } from "./middlewares/noop";
 
 declare module "hono" {
   interface ContextVariableMap {
@@ -22,22 +18,75 @@ declare module "hono" {
   }
 }
 
+function resolveRoot(configPath: string, rootPath: string) {
+  const configPathWithoutFile = configPath.split("/").slice(0, -1).join("/");
+  if (rootPath.startsWith("/")) {
+    return rootPath;
+  }
+  const returnPath = resolve(configPathWithoutFile, rootPath);
+  return returnPath;
+}
+
 async function main() {
   const { config, configFile } = await getConfig();
 
   const app = new Hono();
 
-  if (config.server.log) {
-    app.use(logger());
-  }
+  const loggerMiddleware = config.server.log
+    ? await import("hono/logger").then(({ logger }) => logger())
+    : noopMiddleware();
+  const secureHeadersMiddleware = config.server.secureHeaders
+    ? await import("hono/secure-headers").then(({ secureHeaders }) =>
+        secureHeaders()
+      )
+    : noopMiddleware();
+  const csrfMiddleware = config.csrf.enabled
+    ? await import("hono/csrf").then(({ csrf }) =>
+        csrf({
+          origin: config.csrf.origin,
+        })
+      )
+    : noopMiddleware();
+  const corsMiddleware = config.cors.enabled
+    ? await import("hono/cors").then(({ cors }) =>
+        cors({
+          origin: config.cors.origin,
+        })
+      )
+    : noopMiddleware();
+
+  const etagMiddleware = config.etag.enabled
+    ? await import("./middlewares/etag").then(({ etagMiddleware }) =>
+        etagMiddleware({
+          enabled: config.etag.enabled,
+          maxAge: config.etag.maxAge,
+        })
+      )
+    : noopMiddleware();
+
+  const cacheMiddleware = config.cache.enabled
+    ? await import("./middlewares/cache").then(({ cacheMiddleware }) =>
+        cacheMiddleware({
+          enabled: config.cache.enabled,
+        })
+      )
+    : noopMiddleware();
+
+  const compressionMiddleware = config.compression.enabled
+    ? await import("./middlewares/compression").then(
+        ({ compressionMiddleware }) =>
+          compressionMiddleware({
+            enabled: config.compression.enabled,
+            mimeTypes: config.compression.mimeTypes,
+            gzip: config.compression.gzip,
+            brotli: config.compression.brotli,
+            deflate: config.compression.deflate,
+          })
+      )
+    : noopMiddleware();
+  const rootPath = resolveRoot(config.server.configPath, config.paths.root);
+
   app.use(
-    `${
-      config.paths.basePath.endsWith("/")
-        ? config.paths.basePath
-        : `${config.paths.basePath}/`
-    }*`,
-    jsxRenderer(),
-    secureHeaders(),
     (c, next) => {
       c.set("file", undefined);
       c.set("stream", undefined);
@@ -46,24 +95,20 @@ async function main() {
       c.set("headers", undefined);
       return next();
     },
+    await loggerMiddleware,
     staticMiddleware({
-      root: config.paths.root,
+      root: rootPath,
       precompressed: config.compression.enabled,
       directoryIndex: config.paths.directoryIndex,
+      serveHiddenFiles: config.server.serveHiddenFiles,
+      spaMode: config.paths.spaMode,
     }),
-    etagMiddleware({
-      enabled: config.etag.enabled,
-      maxAge: config.etag.maxAge,
-    }),
-    cacheMiddleware({
-      enabled: config.cache.enabled,
-    }),
-    compressionMiddleware({
-      enabled: config.compression.enabled,
-      gzip: config.compression.gzip,
-      brotli: config.compression.brotli,
-      deflate: config.compression.deflate,
-    }),
+    await etagMiddleware,
+    await cacheMiddleware,
+    await compressionMiddleware,
+    await csrfMiddleware,
+    await corsMiddleware,
+    await secureHeadersMiddleware,
     renderMiddleware()
   );
 
@@ -72,13 +117,14 @@ async function main() {
     : config.server.port;
 
   const server = serve({
+    development: config.server.development,
     port: actualPort,
     hostname: config.server.hostname,
     reusePort: false,
     fetch: app.fetch,
   });
 
-  startLog(server, config, configFile);
+  startLog(server, config, rootPath, configFile);
 }
 
 export default await main();

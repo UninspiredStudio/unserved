@@ -4,17 +4,26 @@ import type { UnservedConfigPartial } from "./config";
 function getOptionsValues() {
   const { values } = parseArgs({
     options: {
+      "server-development": {
+        type: "boolean",
+      },
       "server-port": {
         type: "string",
       },
       "server-hostname": {
         type: "string",
       },
-      "server-log-disabled": {
+      "server-log-enabled": {
         type: "boolean",
       },
-      "server-autoport-disabled": {
+      "server-autoport-enabled": {
         type: "boolean",
+      },
+      "server-serve-hidden-files": {
+        type: "boolean",
+      },
+      "server-config-path": {
+        type: "string",
       },
       "paths-root": {
         type: "string",
@@ -28,17 +37,20 @@ function getOptionsValues() {
       "paths-directory-index": {
         type: "boolean",
       },
-      "cache-disabled": {
+      "cache-enabled": {
         type: "boolean",
       },
-      "etag-disabled": {
+      "etag-enabled": {
         type: "boolean",
       },
       "etag-max-age": {
         type: "string",
       },
-      "compression-disabled": {
+      "compression-enabled": {
         type: "boolean",
+      },
+      "compression-mime-types": {
+        type: "string",
       },
       "compression-gzip-enabled": {
         type: "boolean",
@@ -79,75 +91,48 @@ function getOptionsValues() {
 
 export function getOptions(): UnservedConfigPartial {
   const options = getOptionsValues();
-  console.log({ options });
 
   return {
     server: {
+      development: options["server-development"],
       port:
         options["server-port"] === undefined
           ? undefined
           : parseInt(options["server-port"]),
       hostname: options["server-hostname"],
-      log:
-        options["server-log-disabled"] === undefined
-          ? undefined
-          : !options["server-log-disabled"],
-      autoport:
-        options["server-autoport-disabled"] === undefined
-          ? undefined
-          : !options["server-autoport-disabled"],
+      log: options["server-log-enabled"],
+      serveHiddenFiles: options["server-serve-hidden-files"],
+      autoport: options["server-autoport-enabled"],
+      configPath: options["server-config-path"],
     },
     paths: {
       root: options["paths-root"],
       basePath: options["paths-base-path"],
-      spaMode:
-        options["paths-spa-mode"] === undefined
-          ? undefined
-          : !options["paths-spa-mode"],
-      directoryIndex:
-        options["paths-directory-index"] === undefined
-          ? undefined
-          : !options["paths-directory-index"],
+      spaMode: options["paths-spa-mode"],
+      directoryIndex: options["paths-directory-index"],
     },
     cache: {
-      enabled:
-        options["cache-disabled"] === undefined
-          ? undefined
-          : !options["cache-disabled"],
+      enabled: options["cache-enabled"],
     },
     etag: {
-      enabled:
-        options["etag-disabled"] === undefined
-          ? undefined
-          : !options["etag-disabled"],
+      enabled: options["etag-enabled"],
       maxAge: options["etag-max-age"],
     },
     compression: {
-      enabled:
-        options["compression-disabled"] === undefined
-          ? undefined
-          : !options["compression-disabled"],
+      enabled: options["compression-enabled"],
+      mimeTypes: options["compression-mime-types"],
       gzip: {
-        enabled:
-          options["compression-gzip-enabled"] === undefined
-            ? undefined
-            : options["compression-gzip-enabled"],
+        enabled: options["compression-gzip-enabled"],
         level: options["compression-gzip-level"],
         memLevel: options["compression-gzip-mem-level"],
         windowBits: options["compression-gzip-window-bits"],
       },
       brotli: {
-        enabled:
-          options["compression-brotli-enabled"] === undefined
-            ? undefined
-            : options["compression-brotli-enabled"],
+        enabled: options["compression-brotli-enabled"],
         quality: options["compression-brotli-quality"],
       },
       deflate: {
-        enabled:
-          options["compression-deflate-enabled"] === undefined
-            ? undefined
-            : options["compression-deflate-enabled"],
+        enabled: options["compression-deflate-enabled"],
         level: options["compression-deflate-level"],
         memLevel: options["compression-deflate-mem-level"],
         windowBits: options["compression-deflate-window-bits"],

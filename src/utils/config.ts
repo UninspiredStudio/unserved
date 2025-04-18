@@ -73,10 +73,15 @@ const brotliConfigurationOptions = {
 };
 
 const serverConfigSchema = z.object({
+  development: z.boolean(),
   port: z.number(),
   hostname: z.string(),
+  publicUrl: z.optional(z.string()),
+  serveHiddenFiles: z.boolean(),
+  secureHeaders: z.boolean(),
   log: z.boolean(),
   autoport: z.boolean(),
+  configPath: z.string(),
 });
 
 const pathsConfigSchema = z.object({
@@ -95,20 +100,19 @@ const etagConfigSchema = z.object({
   maxAge: z.number(),
 });
 
-const compressionConfigSchema = z.object({
+const corsConfigSchema = z.object({
   enabled: z.boolean(),
-  gzip: z.object({
-    enabled: z.boolean(),
-    ...zlibConfigurationOptions,
-  }),
-  brotli: z.object({
-    enabled: z.boolean(),
-    ...brotliConfigurationOptions,
-  }),
-  deflate: z.object({
-    enabled: z.boolean(),
-    ...zlibConfigurationOptions,
-  }),
+  origin: z.array(z.string()),
+  allowHeaders: z.array(z.string()),
+  allowMethods: z.array(z.string()),
+  exposeHeaders: z.array(z.string()),
+  credentials: z.boolean(),
+  maxAge: z.number(),
+});
+
+const csrfConfigSchema = z.object({
+  enabled: z.boolean(),
+  origin: z.array(z.string()),
 });
 
 export const unservedConfigSchema = z.object({
@@ -116,7 +120,24 @@ export const unservedConfigSchema = z.object({
   paths: pathsConfigSchema,
   cache: cacheConfigSchema,
   etag: etagConfigSchema,
-  compression: compressionConfigSchema,
+  compression: z.object({
+    enabled: z.boolean(),
+    mimeTypes: z.array(z.string()),
+    gzip: z.object({
+      enabled: z.boolean(),
+      ...zlibConfigurationOptions,
+    }),
+    brotli: z.object({
+      enabled: z.boolean(),
+      ...brotliConfigurationOptions,
+    }),
+    deflate: z.object({
+      enabled: z.boolean(),
+      ...zlibConfigurationOptions,
+    }),
+  }),
+  cors: corsConfigSchema,
+  csrf: csrfConfigSchema,
 });
 
 export type UnservedConfig = z.infer<typeof unservedConfigSchema>;
@@ -127,7 +148,32 @@ export const unservedConfigSchemaPartial = z.partial(
     paths: z.partial(pathsConfigSchema),
     cache: z.partial(cacheConfigSchema),
     etag: z.partial(etagConfigSchema),
-    compression: z.partial(compressionConfigSchema),
+    compression: z.partial(
+      z.object({
+        enabled: z.boolean(),
+        mimeTypes: z.array(z.string()),
+        gzip: z.partial(
+          z.object({
+            enabled: z.boolean(),
+            ...zlibConfigurationOptions,
+          })
+        ),
+        brotli: z.partial(
+          z.object({
+            enabled: z.boolean(),
+            ...brotliConfigurationOptions,
+          })
+        ),
+        deflate: z.partial(
+          z.object({
+            enabled: z.boolean(),
+            ...zlibConfigurationOptions,
+          })
+        ),
+      })
+    ),
+    cors: z.partial(corsConfigSchema),
+    csrf: z.partial(csrfConfigSchema),
   })
 );
 export type UnservedConfigPartial = z.infer<typeof unservedConfigSchemaPartial>;
@@ -138,7 +184,11 @@ export async function getConfig(): Promise<{
 }> {
   const envConfig = getEnvConfig();
   const optionsConfig = getOptions();
-  const { configFile, config: configFileConfig } = await loadUnservedConfig();
+  const { configFile, config: configFileConfig } = await loadUnservedConfig(
+    (envConfig as any).server?.configPath ??
+      (optionsConfig as any).server?.configPath ??
+      defaultsConfig.server.configPath
+  );
 
   const config = merge(
     defaultsConfig,

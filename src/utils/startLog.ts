@@ -1,10 +1,11 @@
 import type { Server } from "bun";
 import type { UnservedConfig } from "./config";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 
 export function startLog(
   server: Server,
   options: UnservedConfig,
+  rootPath: string,
   configFile?: string
 ) {
   const enabledFeatures: string[] = [];
@@ -54,7 +55,8 @@ export function startLog(
 
   const table: Record<string, string> = {
     URL: server.url.toString(),
-    Root: resolve(options.paths.root),
+    Mode: options.server.development ? "Development" : "Production",
+    Root: `./${relative(process.cwd(), rootPath)}`,
     "Base Path": options.paths.basePath,
   };
 
@@ -78,9 +80,8 @@ export function startLog(
   if (options.paths.directoryIndex) {
     table["Directory Index"] = "Enabled";
   }
-
   if (configFile) {
-    table["Config File"] = `./${configFile}`;
+    table["Config File"] = `./${relative(process.cwd(), configFile)}`;
   }
 
   console.table(table);

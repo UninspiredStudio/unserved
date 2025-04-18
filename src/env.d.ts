@@ -1,18 +1,20 @@
 declare module "bun" {
   interface Env {
-    NODE_ENV?: "production" | "development";
     SERVER_PORT?: string;
     SERVER_HOST?: string;
-    SERVER_AUTOPORT_DISABLED?: string;
-    SERVER_LOG_DISABLED?: string;
+    SERVER_AUTOPORT_ENABLED?: string;
+    SERVER_LOG_ENABLED?: string;
+    SERVER_CONFIG_PATH?: string;
+    SERVER_DEVELOPMENT?: string;
     PATHS_ROOT?: string;
-    PATHS_SPA_MODE_DISABLED?: string;
+    PATHS_SPA_MODE_ENABLED?: string;
     PATHS_BASE_PATH?: string;
-    PATHS_DIRECTORY_INDEX_DISABLED?: string;
-    CACHE_DISABLED?: string;
-    ETAG_DISABLED?: string;
+    PATHS_DIRECTORY_INDEX_ENABLED?: string;
+    CACHE_ENABLED?: string;
+    ETAG_ENABLED?: string;
     ETAG_MAX_AGE?: string;
-    COMPRESSION_DISABLED?: string;
+    COMPRESSION_ENABLED?: string;
+    COMPRESSION_MIME_TYPES?: string;
     COMPRESSION_GZIP_ENABLED?: string;
     COMPRESSION_GZIP_LEVEL?: string;
     COMPRESSION_GZIP_MEM_LEVEL?: string;

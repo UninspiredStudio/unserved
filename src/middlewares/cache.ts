@@ -23,7 +23,7 @@ export const cacheMiddleware = (options: CacheMiddlewareOptions) => {
       await next();
       const bytes = c.get("bytes");
       const headers = c.get("headers");
-      if (!bytes || !headers) return next();
+      if (!bytes || !headers) return new Response("Not Found", { status: 404 });
       const result = {
         lastModified: file.lastModified,
         bytes,

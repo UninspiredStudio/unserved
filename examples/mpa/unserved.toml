@@ -4,4 +4,3 @@ autoport = true
 
 [paths]
 root = "./html"
-directoryIndex = false

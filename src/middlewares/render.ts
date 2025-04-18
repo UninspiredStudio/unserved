@@ -1,4 +1,4 @@
-import type { Context, Next } from "hono";
+import type { Context } from "hono";
 import { cloneStream, type Stream } from "../utils/stream";
 import { readableStreamToBytes } from "bun";
 

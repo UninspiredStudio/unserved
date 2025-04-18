@@ -1,5 +1,5 @@
 {
-  "name": "unserved-hono",
+  "name": "@uninspired/unserved",
   "module": "src/index.ts",
   "type": "module",
   "version": "0.0.1",
@@ -11,6 +11,9 @@
     }
   },
   "scripts": {
+    "dev:spa": "bun --watch run src/server.ts --server-config-path ./examples/spa/unserved.toml",
+    "dev:mpa": "bun --watch run src/server.ts --server-config-path ./examples/mpa/unserved.toml",
+    "dev:directory-index": "bun --watch run src/server.ts --server-config-path ./examples/directory-index/unserved.toml",
     "start": "bun run bin/server.js --port 3000",
     "clean": "bun run scripts/clean.ts",
     "bundle": "bun run scripts/bundle.ts",
