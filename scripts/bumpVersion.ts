@@ -46,7 +46,7 @@ async function main() {
   const newVersion = semverInc(
     version,
     releaseType,
-    releaseType === "prerelease" ? "beta" : undefined
+    releaseType === "prerelease" ? "prerelease" : undefined
   );
 
   packageJson.version = newVersion;
