@@ -1,6 +1,5 @@
 {
   "name": "@uninspired/unserved",
-  "module": "src/index.ts",
   "type": "module",
   "version": "0.0.2-prerelease.0",
   "exports": {
@@ -10,6 +9,7 @@
       "types": "./dist/types/index.d.ts"
     }
   },
+  "bin": "./bin/server.js",
   "scripts": {
     "dev:spa": "bun --watch run src/server.ts --server-config-path ./examples/spa/unserved.toml",
     "dev:mpa": "bun --watch run src/server.ts --server-config-path ./examples/mpa/unserved.toml",
