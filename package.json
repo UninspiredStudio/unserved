@@ -31,6 +31,7 @@
     "@types/bun": "latest",
     "@types/lodash.merge": "^4.6.9",
     "@types/semver": "^7.7.0",
+    "@types/yargs": "^17.0.33",
     "semver": "^7.7.1"
   },
   "peerDependencies": {
@@ -39,6 +40,7 @@
   "dependencies": {
     "@zod/mini": "^4.0.0-beta.0",
     "hono": "^4.7.7",
-    "lodash.merge": "^4.6.2"
+    "lodash.merge": "^4.6.2",
+    "yargs": "^17.7.2"
   }
 }
