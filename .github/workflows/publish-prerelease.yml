@@ -31,7 +31,6 @@ jobs:
           file_pattern: "package.json"
           tagging_message: "v${{ env.VERSION }}"
           repository: .
-          create_branch: true
   publish:
     needs: bump
     runs-on: ubuntu-latest
