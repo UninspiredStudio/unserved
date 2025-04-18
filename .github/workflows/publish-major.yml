@@ -1,4 +1,4 @@
-name: Publish Prerelease
+name: Publish Major
 on:
   push:
     branches:
