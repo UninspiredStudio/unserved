@@ -1,7 +1,7 @@
 {
   "name": "@uninspired/unserved",
   "type": "module",
-  "version": "0.0.2-prerelease.0",
+  "version": "0.0.2-prerelease.1",
   "exports": {
     ".": {
       "require": "./dist/cjs/index.js",
