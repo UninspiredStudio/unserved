@@ -1,0 +1,34 @@
+{
+  "name": "unserved",
+  "module": "src/index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "scripts": {
+    "start": "bun run bin/server.js --port 3000",
+    "clean": "bun run scripts/clean.ts",
+    "bundle": "bun run scripts/bundle.ts",
+    "shebang": "bun run scripts/shebang.ts",
+    "build": "bun run clean && bun run bundle && bun run shebang"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/lodash.merge": "^4.6.9",
+    "@types/semver": "^7.7.0",
+    "semver": "^7.7.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@zod/mini": "^4.0.0-beta.0",
+    "hono": "^4.7.7",
+    "lodash.merge": "^4.6.2"
+  }
+}

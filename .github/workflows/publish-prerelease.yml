@@ -1,0 +1,59 @@
+name: Publish Prerelease
+on:
+  push:
+    branches:
+      - prerelease
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+  bump:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: oven-sh/setup-bun@v2
+      - run: echo "VERSION=$(bun run scripts/bumpVersion.ts --type major)" >> $GITHUB_ENV
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Major bump ${{ env.VERSION }}"
+          commit_options: "--no-verify --signoff"
+          file_pattern: "package.json"
+          tagging_message: "v${{ env.VERSION }}"
+          repository: .
+          commit_user_name: Bump Bot
+          commit_author: BumpBot <actions@github.com>
+  publish:
+    needs: bump
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: touch bunfig.toml && echo "[install]" > bunfig.toml && echo 'registry = { url = "https://registry.npmjs.org", token = "${{ secrets.NPM_TOKEN }}" }' >> bunfig.toml
+      - run: bun publish
+  merge:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: devmasx/merge-branch@master
+        with:
+          type: now
+          target_branch: main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
