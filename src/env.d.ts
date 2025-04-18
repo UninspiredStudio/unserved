@@ -11,6 +11,7 @@ declare module "bun" {
     PATHS_BASE_PATH?: string;
     PATHS_DIRECTORY_INDEX_ENABLED?: string;
     CACHE_ENABLED?: string;
+    CACHE_MIME_TYPES?: string;
     ETAG_ENABLED?: string;
     ETAG_MAX_AGE?: string;
     COMPRESSION_ENABLED?: string;

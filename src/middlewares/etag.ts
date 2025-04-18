@@ -2,6 +2,7 @@ import { CryptoHasher } from "bun";
 import type { Context, Next } from "hono";
 import type { Stream } from "../utils/stream";
 import type { UnservedConfig } from "../utils/config";
+import { objectToHeaders } from "../utils/headers";
 
 export type EtagMiddlewareOptions = UnservedConfig["etag"];
 
@@ -51,9 +52,9 @@ export const etagMiddleware = (options: EtagMiddlewareOptions) => {
       };
       etagCache.set(path, etagResult);
       c.set("stream", outputStream);
-      c.res.headers.set("X-Etag-Cache", "HIT");
-    } else {
       c.res.headers.set("X-Etag-Cache", "MISS");
+    } else {
+      c.res.headers.set("X-Etag-Cache", "HIT");
     }
     const { etag, lastModified } = etagResult;
 
@@ -67,9 +68,12 @@ export const etagMiddleware = (options: EtagMiddlewareOptions) => {
         return new Response(null, { status: 304 });
     }
 
-    c.res.headers.set("Etag", etag);
-    c.res.headers.set("Last-Modified", new Date(lastModified).toISOString());
-    c.res.headers.set("Cache-Control", `public,max-age=${options.maxAge}`);
+    c.set("headerMap", {
+      ...c.get("headerMap"),
+      Etag: etag,
+      "Last-Modified": lastModifiedIsoString,
+      "Cache-Control": `public,max-age=${options.maxAge}`,
+    });
 
     return next();
   };
