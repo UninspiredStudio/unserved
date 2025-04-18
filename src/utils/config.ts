@@ -93,6 +93,7 @@ const pathsConfigSchema = z.object({
 
 const cacheConfigSchema = z.object({
   enabled: z.boolean(),
+  mimeTypes: z.array(z.string()),
 });
 
 const etagConfigSchema = z.object({

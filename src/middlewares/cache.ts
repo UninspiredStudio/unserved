@@ -1,10 +1,11 @@
 import type { Context, Next } from "hono";
 import type { UnservedConfig } from "../utils/config";
+import { isOneOfMimeTypes } from "../utils/mimeType";
 
 interface CacheEntry {
   lastModified: number;
   bytes: Uint8Array;
-  headers: Headers;
+  headers: Record<string, string>;
 }
 
 const cache = new Map<string, CacheEntry>();
@@ -14,29 +15,35 @@ export type CacheMiddlewareOptions = UnservedConfig["cache"];
 export const cacheMiddleware = (options: CacheMiddlewareOptions) => {
   return async (c: Context, next: Next) => {
     if (!options.enabled) return next();
-    const file = c.get("file");
-    if (!file) return next();
     const path = c.req.path;
+    const lastModified = c.get("lastModified");
+    const mimeType = c.get("mimeType");
+    if (!mimeType) return next();
+    const isAllowed = isOneOfMimeTypes(mimeType, options.mimeTypes);
+    if (!isAllowed) return next();
 
     let cacheResult = cache.get(path);
-    if (!cacheResult || cacheResult.lastModified !== file.lastModified) {
+    if (!cacheResult || cacheResult.lastModified !== lastModified) {
       await next();
       const bytes = c.get("bytes");
-      const headers = c.get("headers");
-      if (!bytes || !headers) return new Response("Not Found", { status: 404 });
+      if (!bytes) return new Response("Not Found", { status: 404 });
+      const headerMap = c.get("headerMap");
       const result = {
-        lastModified: file.lastModified,
+        lastModified: lastModified ?? Date.now(),
         bytes,
-        headers,
+        headers: headerMap ?? {},
       };
       cache.set(path, result);
-      cacheResult = result;
       c.res.headers.set("X-Cache", "MISS");
+      return c.res;
     } else {
       c.res.headers.set("X-Cache", "HIT");
+      const blob = new Blob([cacheResult.bytes], {
+        type: mimeType,
+      });
+      return new Response(blob, {
+        headers: cacheResult.headers,
+      });
     }
-
-    const { bytes, headers } = cacheResult;
-    return new Response(bytes, { headers });
   };
 };

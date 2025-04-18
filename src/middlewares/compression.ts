@@ -1,5 +1,5 @@
 import type { Context, Next } from "hono";
-import { gzipSync, deflateSync, readableStreamToBytes } from "bun";
+import { gzipSync, deflateSync, readableStreamToBytes, file } from "bun";
 import { brotliCompressSync, constants } from "node:zlib";
 import type { Stream, StreamData } from "../utils/stream";
 import type { UnservedConfig } from "../utils/config";
@@ -137,14 +137,16 @@ export const compressionMiddleware = (
 ) => {
   return async (c: Context, next: Next) => {
     if (!options.enabled) return next();
-    const file = c.get("file");
-    if (!file) return next();
-    const isAllowed = isOneOfMimeTypes(file.type, options.mimeTypes);
+    const mimeType = c.get("mimeType");
+    let size = c.get("size");
+    let stream = c.get("stream");
+    if (!mimeType || !size || !stream) return next();
+
+    const isAllowed = isOneOfMimeTypes(mimeType, options.mimeTypes);
     if (!isAllowed) return next();
 
-    let outputStream: Stream = file.stream();
     let encoding: "identity" | "gzip" | "deflate" | "br" = "identity";
-    let outputSize: number = file.size;
+    let outputSize: number = size;
     const acceptedEncodings = extractEncodings(
       c.req.header("Accept-Encoding")
     ).sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
@@ -154,41 +156,46 @@ export const compressionMiddleware = (
         case "br": {
           if (!options.brotli.enabled) break;
           const result = await compressBrotli(
-            outputStream,
-            file.type,
-            file.size,
+            stream,
+            mimeType,
+            size,
             options.brotli
           );
-          outputStream = result.stream;
-          outputSize = result.size;
+          stream = result.stream;
+          size = result.size;
           encoding = "br";
           encoded = true;
           break;
         }
         case "gzip": {
           if (!options.gzip.enabled) break;
-          const result = await compressGzip(outputStream, options.gzip);
-          outputStream = result.stream;
-          outputSize = result.size;
+          const result = await compressGzip(stream, options.gzip);
+          stream = result.stream;
+          size = result.size;
           encoding = "gzip";
           encoded = true;
           break;
         }
         case "deflate": {
           if (!options.deflate.enabled) break;
-          const result = await compressDeflate(outputStream, options.deflate);
-          outputStream = result.stream;
-          outputSize = result.size;
+          const result = await compressDeflate(stream, options.deflate);
+          stream = result.stream;
+          size = result.size;
           encoding = "deflate";
           encoded = true;
+          break;
         }
       }
       if (encoded) break;
     }
 
-    c.res.headers.set("Content-Encoding", encoding);
-    // c.res.headers.set("Content-Length", outputSize.toString());
-    c.set("stream", outputStream);
+    c.set("headerMap", {
+      ...c.get("headerMap"),
+      "Content-Encoding": encoding,
+      "Content-Length": size.toString(),
+    });
+    c.set("stream", stream);
+    c.set("size", size);
     return next();
   };
 };

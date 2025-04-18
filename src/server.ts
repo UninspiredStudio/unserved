@@ -8,14 +8,16 @@ import { startLog } from "./utils/startLog";
 import { resolve } from "node:path";
 import { noopMiddleware } from "./middlewares/noop";
 import { CONFIG_FILE_JSON, CONFIG_FILE_TOML } from "./utils/configFile";
+import type { Stream } from "./utils/stream";
 
 declare module "hono" {
   interface ContextVariableMap {
-    file?: BunFile;
-    stream?: ReadableStream<Uint8Array<ArrayBufferLike>>;
+    mimeType?: string;
+    size?: number;
+    stream?: Stream;
     lastModified?: number;
     bytes?: Uint8Array;
-    headers?: Headers;
+    headerMap?: Record<string, string>;
   }
 }
 
@@ -71,6 +73,7 @@ async function main() {
     ? await import("./middlewares/cache").then(({ cacheMiddleware }) =>
         cacheMiddleware({
           enabled: config.cache.enabled,
+          mimeTypes: config.cache.mimeTypes,
         })
       )
     : noopMiddleware();
@@ -96,11 +99,10 @@ async function main() {
         : `${config.paths.basePath}/*`
       : "/*",
     (c, next) => {
-      c.set("file", undefined);
       c.set("stream", undefined);
       c.set("lastModified", undefined);
       c.set("bytes", undefined);
-      c.set("headers", undefined);
+      c.set("headerMap", undefined);
       return next();
     },
     await loggerMiddleware,

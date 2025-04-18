@@ -33,6 +33,7 @@ interface ActualEnv {
   PATHS_BASE_PATH?: string;
   PATHS_DIRECTORY_INDEX_ENABLED?: boolean;
   CACHE_ENABLED?: boolean;
+  CACHE_MIME_TYPES?: string[];
   ETAG_ENABLED?: boolean;
   ETAG_MAX_AGE?: number;
   COMPRESSION_ENABLED?: boolean;
@@ -62,6 +63,7 @@ export const env: ActualEnv = {
   PATHS_BASE_PATH: import.meta.env.PATHS_BASE_PATH,
   PATHS_DIRECTORY_INDEX_ENABLED: getBool(import.meta.env.PATHS_DIRECTORY_INDEX),
   CACHE_ENABLED: getBool(import.meta.env.CACHE_ENABLED),
+  CACHE_MIME_TYPES: getArray(import.meta.env.CACHE_MIME_TYPES),
   ETAG_ENABLED: getBool(import.meta.env.ETAG_ENABLED),
   ETAG_MAX_AGE: getInt(import.meta.env.ETAG_MAX_AGE),
   COMPRESSION_ENABLED: getBool(import.meta.env.COMPRESSION_ENABLED),
@@ -112,6 +114,7 @@ export function getEnvConfig(): UnservedConfigPartial {
     },
     cache: {
       enabled: env.CACHE_ENABLED,
+      mimeTypes: env.CACHE_MIME_TYPES,
     },
     etag: {
       enabled: env.ETAG_ENABLED,

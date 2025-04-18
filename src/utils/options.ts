@@ -1,6 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import type { UnservedConfigPartial } from "./config";
+import { getArray } from "./env";
 
 function getOptionsValues() {
   const argv = yargs(hideBin(Bun.argv))
@@ -51,6 +52,10 @@ function getOptionsValues() {
     .option("cache-enabled", {
       type: "boolean",
       description: "Enable caching",
+    })
+    .option("cache-mime-types", {
+      type: "string",
+      description: "Cache MIME types",
     })
     .option("etag-enabled", {
       type: "boolean",
@@ -137,6 +142,7 @@ export function getOptions(): UnservedConfigPartial {
     },
     cache: {
       enabled: options["cache-enabled"],
+      mimeTypes: getArray(options["cache-mime-types"]),
     },
     etag: {
       enabled: options["etag-enabled"],
@@ -144,7 +150,7 @@ export function getOptions(): UnservedConfigPartial {
     },
     compression: {
       enabled: options["compression-enabled"],
-      mimeTypes: options["compression-mime-types"],
+      mimeTypes: getArray(options["compression-mime-types"]),
       gzip: {
         enabled: options["compression-gzip-enabled"],
         level: options["compression-gzip-level"],

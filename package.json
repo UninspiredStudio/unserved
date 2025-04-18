@@ -9,7 +9,7 @@
     "url": "https://github.com/UninspiredStudio/unserved.git"
   },
   "type": "module",
-  "version": "0.0.2-prerelease.5",
+  "version": "0.0.2",
   "files": [
     "dist",
     "bin",
