@@ -140,7 +140,6 @@ export const compressionMiddleware = (
     const file = c.get("file");
     if (!file) return next();
     const isAllowed = isOneOfMimeTypes(file.type, options.mimeTypes);
-    console.log(file.type, isAllowed);
     if (!isAllowed) return next();
 
     let outputStream: Stream = file.stream();

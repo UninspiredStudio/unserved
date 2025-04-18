@@ -7,6 +7,7 @@ import { getNextAvailablePort } from "./utils/ports";
 import { startLog } from "./utils/startLog";
 import { resolve } from "node:path";
 import { noopMiddleware } from "./middlewares/noop";
+import { CONFIG_FILE_JSON, CONFIG_FILE_TOML } from "./utils/configFile";
 
 declare module "hono" {
   interface ContextVariableMap {
@@ -19,7 +20,9 @@ declare module "hono" {
 }
 
 function resolveRoot(configPath: string, rootPath: string) {
-  const configPathWithoutFile = configPath.split("/").slice(0, -1).join("/");
+  const configPathWithoutFile = configPath
+    .replace(`/${CONFIG_FILE_JSON}`, "")
+    .replace(`/${CONFIG_FILE_TOML}`, "");
   if (rootPath.startsWith("/")) {
     return rootPath;
   }
@@ -87,6 +90,11 @@ async function main() {
   const rootPath = resolveRoot(config.server.configPath, config.paths.root);
 
   app.use(
+    config.paths.basePath
+      ? config.paths.basePath.endsWith("/")
+        ? `${config.paths.basePath}*`
+        : `${config.paths.basePath}/*`
+      : "/*",
     (c, next) => {
       c.set("file", undefined);
       c.set("stream", undefined);

@@ -5,8 +5,8 @@ import {
   type UnservedConfigPartial,
 } from "./config";
 
-const CONFIG_FILE_JSON = "unserved.json" as const;
-const CONFIG_FILE_TOML = "unserved.toml" as const;
+export const CONFIG_FILE_JSON = "unserved.json" as const;
+export const CONFIG_FILE_TOML = "unserved.toml" as const;
 
 export async function findConfig(configPath?: string): Promise<string | null> {
   // configPath can be either a path to a file or a directory
