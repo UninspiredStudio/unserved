@@ -1,8 +1,10 @@
-name: Publish Prerelease
+name: Publish Major
 on:
   push:
     branches:
       - release/major
+    paths-ignore:
+      - package.json
 jobs:
   build:
     runs-on: ubuntu-latest
