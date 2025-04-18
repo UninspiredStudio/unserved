@@ -2,6 +2,13 @@
   "name": "@uninspired/unserved",
   "type": "module",
   "version": "0.0.2-prerelease.1",
+  "files": [
+    "dist",
+    "bin",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "require": "./dist/cjs/index.js",
