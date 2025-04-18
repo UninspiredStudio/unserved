@@ -1,8 +1,9 @@
 # @uninspired/unserved
 
-A simple, flexible, and powerful HTTP server based on Bun and Hono.
-
 > You need Bun installed to use this package.
+
+A simple, flexible, and powerful HTTP server based on Bun and Hono.
+It provides sane defaults to be run in production, while also providing a flexible configuration to be used in development.
 
 ## Features
 
@@ -49,6 +50,7 @@ Configuration is read in the following order:
 1. Environment variables
 2. Configuration file
 3. CLI arguments
+4. Defaults
 
 Each will override the previous one.
 
@@ -210,4 +212,72 @@ interface Env {
   COMPRESSION_DEFLATE_MEM_LEVEL?: number;
   COMPRESSION_DEFLATE_WINDOW_BITS?: number;
 }
+```
+
+### Defaults
+
+The following defaults are used if no configuration is provided:
+
+```ts
+import type { UnservedConfig } from "./config";
+
+export const defaults: UnservedConfig = {
+  server: {
+    development: false,
+    port: 3000,
+    publicUrl: undefined,
+    serveHiddenFiles: false,
+    hostname: "localhost",
+    secureHeaders: true,
+    log: true,
+    autoport: true,
+    configPath: process.cwd(),
+  },
+  paths: {
+    root: process.cwd(),
+    basePath: "/",
+    spaMode: false,
+    directoryIndex: false,
+  },
+  cache: {
+    enabled: true,
+  },
+  etag: {
+    enabled: true,
+    maxAge: 60 * 60 * 24, // 1 day
+  },
+  compression: {
+    enabled: true,
+    mimeTypes: ["text/*", "script/*", "font/*", "image/icon", "image/svg+xml"],
+    gzip: {
+      enabled: true,
+      level: 9,
+      memLevel: 8,
+      windowBits: 15,
+    },
+    brotli: {
+      enabled: true,
+      quality: 11,
+    },
+    deflate: {
+      enabled: true,
+      level: 9,
+      memLevel: 8,
+      windowBits: 15,
+    },
+  },
+  cors: {
+    enabled: false,
+    origin: [],
+    allowHeaders: [],
+    allowMethods: [],
+    exposeHeaders: [],
+    credentials: false,
+    maxAge: 60 * 60 * 24, // 1 day
+  },
+  csrf: {
+    enabled: false,
+    origin: [],
+  },
+};
 ```
