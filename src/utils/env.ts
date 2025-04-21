@@ -28,6 +28,7 @@ interface ActualEnv {
   SERVER_CONFIG_PATH?: string;
   SERVER_DEVELOPMENT?: boolean;
   SERVER_SERVE_HIDDEN_FILES?: boolean;
+  SERVER_SECURE_HEADERS_ENABLED?: boolean;
   PATHS_ROOT?: string;
   PATHS_SPA_MODE_ENABLED?: boolean;
   PATHS_BASE_PATH?: string;
@@ -58,6 +59,9 @@ export const env: ActualEnv = {
   SERVER_LOG_ENABLED: getBool(import.meta.env.SERVER_LOG_ENABLED),
   SERVER_CONFIG_PATH: import.meta.env.SERVER_CONFIG_PATH,
   SERVER_SERVE_HIDDEN_FILES: getBool(import.meta.env.SERVER_SERVE_HIDDEN_FILES),
+  SERVER_SECURE_HEADERS_ENABLED: getBool(
+    import.meta.env.SERVER_SECURE_HEADERS_ENABLED
+  ),
   PATHS_ROOT: import.meta.env.PATHS_ROOT,
   PATHS_SPA_MODE_ENABLED: getBool(import.meta.env.PATHS_SPA_MODE),
   PATHS_BASE_PATH: import.meta.env.PATHS_BASE_PATH,
@@ -105,6 +109,7 @@ export function getEnvConfig(): UnservedConfigPartial {
       log: env.SERVER_LOG_ENABLED,
       configPath: env.SERVER_CONFIG_PATH,
       serveHiddenFiles: env.SERVER_SERVE_HIDDEN_FILES,
+      secureHeaders: env.SERVER_SECURE_HEADERS_ENABLED,
     },
     paths: {
       root: env.PATHS_ROOT,

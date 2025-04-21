@@ -6,6 +6,7 @@ declare module "bun" {
     SERVER_LOG_ENABLED?: string;
     SERVER_CONFIG_PATH?: string;
     SERVER_DEVELOPMENT?: string;
+    SERVER_SECURE_HEADERS_ENABLED?: string;
     PATHS_ROOT?: string;
     PATHS_SPA_MODE_ENABLED?: string;
     PATHS_BASE_PATH?: string;

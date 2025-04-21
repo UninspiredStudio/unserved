@@ -77,6 +77,7 @@ Options:
   --server-log-enabled               Enable server logging             [boolean]
   --server-autoport-enabled          Enable automatic port selection   [boolean]
   --server-serve-hidden-files        Serve hidden files                [boolean]
+  --server-secure-headers-enabled    Enable secure headers             [boolean]
   --server-config-path               Path to configuration file         [string]
   --paths-root                       Root directory path                [string]
   --paths-base-path                  Base path for serving files        [string]
@@ -128,6 +129,7 @@ interface UnservedConfig {
     configPath: string;
     development: boolean;
     serveHiddenFiles: boolean;
+    secureHeaders: boolean;
   };
   paths: {
     root: string;
@@ -192,6 +194,7 @@ interface Env {
   SERVER_CONFIG_PATH?: string;
   SERVER_DEVELOPMENT?: boolean;
   SERVER_SERVE_HIDDEN_FILES?: boolean;
+  SERVER_SECURE_HEADERS_ENABLED?: boolean;
   PATHS_ROOT?: string;
   PATHS_SPA_MODE_ENABLED?: boolean;
   PATHS_BASE_PATH?: string;

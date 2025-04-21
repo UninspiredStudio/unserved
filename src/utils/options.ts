@@ -29,6 +29,10 @@ function getOptionsValues() {
       type: "boolean",
       description: "Serve hidden files",
     })
+    .option("server-secure-headers-enabled", {
+      type: "boolean",
+      description: "Enable secure headers",
+    })
     .option("server-config-path", {
       type: "string",
       description: "Path to configuration file",
