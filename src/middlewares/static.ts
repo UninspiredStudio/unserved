@@ -183,9 +183,11 @@ export const staticMiddleware = (options: StaticMiddlewareOptions = {}) => {
               content = await getFile(newPath);
             }
             if (!content) return next();
-            c.res.headers.set("Content-Type", content.type);
-            c.res.headers.set("Content-Length", content.size.toString());
-            c.set("file", content);
+            c.set("headerMap", {
+              ...c.get("headerMap"),
+              "Content-Type": content.type,
+              "Content-Length": content.size.toString(),
+            });
             c.set("stream", content.stream());
             return next();
           }
@@ -213,10 +215,16 @@ export const staticMiddleware = (options: StaticMiddlewareOptions = {}) => {
       return next();
     }
 
-    c.res.headers.set("Content-Type", content.type);
-    c.res.headers.set("Content-Length", content.size.toString());
-    c.set("file", content);
+    c.set("headerMap", {
+      ...c.get("headerMap"),
+      "Content-Type": content.type,
+      "Content-Length": content.size.toString(),
+      "Last-Modified": content.lastModified.toString(),
+    });
+    c.set("size", content.size);
+    c.set("mimeType", content.type);
     c.set("stream", content.stream());
+    c.set("lastModified", content.lastModified);
     return next();
   };
 };

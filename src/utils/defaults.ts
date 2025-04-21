@@ -20,6 +20,7 @@ export const defaults: UnservedConfig = {
   },
   cache: {
     enabled: true,
+    mimeTypes: ["text/*", "script/*", "font/*", "image/icon", "image/svg+xml"],
   },
   etag: {
     enabled: true,
